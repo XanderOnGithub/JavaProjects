@@ -9,21 +9,44 @@ import java.util.Random;
 
 /**
  * Wordle in Java, done for fun.
- * 
+ * Created 12/5/2023 - 9:30 PM - 10:30 PM
  * @author Xander Reyes
  * @version 1.0
  */
 
 public class Wordle {
 
+    /** 
+     * Empty Constructor to fix error.
+    */
+    Wordle() {
+        // Empty Constructor
+    }
+
     // Text Colors (Made them static for easy access)
-    public static final String textReset = "\u001B[0m";
-    public static final String textGreen = "\u001B[32m";
-    public static final String textYellow = "\u001B[33m";
+
+    /** Default Text Color. */
+    private static final String textReset = "\u001B[0m";
+    /** Green Text Color. */
+    private static final String textGreen = "\u001B[32m";
+    /** Yellow Text Color. */
+    private static final String textYellow = "\u001B[33m";
 
     // File paths (Made them static for easy access)
-    public static final String allowedGuessesFilename = "AllowedGuesses.txt";
-    public static final String answersFilename = "Answers.txt";
+
+    /** Filename of Allowed Guesses file. */
+    private static final String allowedGuessesFilename = "AllowedGuesses.txt";
+    /** Filename of Answers file. */
+    private static final String answersFilename = "Answers.txt";
+
+    // Variables for Game (Made static for readability)
+
+    /** Random Object. */
+    private static final Random random = new Random();
+    /** Max Tries of Game. */
+    private static final int maxTries = 5;
+    /** Length of Word to Guess. */
+    private static final int wordLength = 5;
 
     /**
      * Main Method - Runs code loop.
@@ -37,8 +60,8 @@ public class Wordle {
         ArrayList<String> answers = readFileAsListOfStrings(answersFilename);
         allowedGuesses.addAll(answers);
 
-        // Init Default Variables.
-        String answer = answers.get(new Random().nextInt(answers.size()));
+        // Init Default Game Variables.
+        String answer = answers.get(random.nextInt(answers.size()));
         int tries = 0;
         boolean win = false;
         ArrayList<String> board = new ArrayList<String>();
@@ -46,7 +69,7 @@ public class Wordle {
         initBoard(board);
 
         // Game Loop.
-        while (tries < 5 && win == false) {
+        while (tries < maxTries && win == false) {
             printBoard(board, answer);
             System.out.printf("Guess %d: ", tries + 1);
             String currentGuess = input.nextLine().toLowerCase().replaceAll(" ", "");
@@ -58,8 +81,9 @@ public class Wordle {
             } else {
                 System.out.println("Invalid Guess");
             }
-        }
+        } // End of Game Loop
 
+        // Checking win condition.
         if (win) {
             printBoard(board, answer);
             System.out.println("\nFinal Board:\n");
@@ -72,18 +96,19 @@ public class Wordle {
         }
         System.out.println(textReset);
         input.close();
-    }
+    } // End of Main Method
 
     /**
      * Initializes the board.
      * 
-     * @param board
+     * @param board board to initialize.
      */
     public static void initBoard(ArrayList<String> board) {
-        for (int i = 0; i < 5; i++) {
-            board.add("_____");
+        String blankBoard = "_".repeat(wordLength);
+        for (int i = 0; i < maxTries; i++) {
+            board.add(blankBoard);
         }
-    }
+    } // End of initBoard method
 
     /**
      * Prints the board and changes the text color according to the answer.
@@ -97,15 +122,15 @@ public class Wordle {
                 if (word.charAt(i) == answer.charAt(i)) {
                     System.out.printf("%s %c", textGreen, word.charAt(i));
                 } else if (answer.contains(String.valueOf(word.charAt(i)))) {
-                    System.out.printf("%s %c ", textYellow, word.charAt(i));
+                    System.out.printf("%s %c", textYellow, word.charAt(i));
                 } else {
                     System.out.printf("%s %c", textReset, word.charAt(i));
                 }
 
             }
             System.out.println();
-        }
-    }
+        } 
+    } // End of printBoard method
 
     /**
      * Checks if the guess is valid.
@@ -115,15 +140,7 @@ public class Wordle {
      * @return Boolean if the guess is valid.
      */
     public static boolean isValidGuess(ArrayList<String> allowedGuesses, String guess) {
-        if (guess.length() == 5 && allowedGuesses.contains(guess)) {
-            if (guess.matches(".*\\d.*")) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
+        return guess.length() == wordLength && allowedGuesses.contains(guess) && !guess.matches(".*\\d.*");
     }
 
     /**
@@ -138,7 +155,7 @@ public class Wordle {
     public static boolean guess(ArrayList<String> board, String guess, String answer, int tries) {
         board.set(tries, guess);
         return guess.equals(answer);
-    }
+    } // End of guess method
 
     /**
      * 
@@ -153,8 +170,10 @@ public class Wordle {
                 data.add(line);
             }
         } catch (IOException e) {
+            System.out.println("Having trouble reading file" + filename);
             e.printStackTrace();
         }
         return data;
-    }
-}
+    } // End of readFileAsListOfStrings method
+
+} // End of Wordle Class
