@@ -1,7 +1,11 @@
 
 // Import: ArrayList, and Scanner
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Random;
 
 /**
  * Wordle in Java, done for fun.
@@ -12,10 +16,14 @@ import java.util.Scanner;
 
 public class Wordle {
 
-    // Text Colors.
+    // Text Colors (Made them static for easy access)
     public static final String textReset = "\u001B[0m";
     public static final String textGreen = "\u001B[32m";
     public static final String textYellow = "\u001B[33m";
+
+    // File paths (Made them static for easy access)
+    public static final String allowedGuessesFilename = "AllowedGuesses.txt";
+    public static final String answersFilename = "Answers.txt";
 
     /**
      * Main Method - Runs code loop.
@@ -24,8 +32,13 @@ public class Wordle {
      */
     public static void main(String[] args) {
 
+        // Answers and allowed Guesses
+        ArrayList<String> allowedGuesses = readFileAsListOfStrings(allowedGuessesFilename);
+        ArrayList<String> answers = readFileAsListOfStrings(answersFilename);
+        allowedGuesses.addAll(answers);
+
         // Init Default Variables.
-        String answer = "wacky";
+        String answer = answers.get(new Random().nextInt(answers.size()));
         int tries = 0;
         boolean win = false;
         ArrayList<String> board = new ArrayList<String>();
@@ -36,8 +49,8 @@ public class Wordle {
         while (tries < 5 && win == false) {
             printBoard(board, answer);
             System.out.printf("Guess %d: ", tries + 1);
-            String currentGuess = input.nextLine().toLowerCase();
-            Boolean validGuess = isValidGuess(currentGuess);
+            String currentGuess = input.nextLine().toLowerCase().replaceAll(" ", "");
+            Boolean validGuess = isValidGuess(allowedGuesses, currentGuess);
 
             if (validGuess) {
                 win = guess(board, currentGuess, answer, tries);
@@ -97,11 +110,12 @@ public class Wordle {
     /**
      * Checks if the guess is valid.
      * 
-     * @param guess Guess to check.
+     * @param guess          Guess to check.
+     * @param allowedGuesses List of allowed guesses.
      * @return Boolean if the guess is valid.
      */
-    public static boolean isValidGuess(String guess) {
-        if (guess.length() == 5) {
+    public static boolean isValidGuess(ArrayList<String> allowedGuesses, String guess) {
+        if (guess.length() == 5 && allowedGuesses.contains(guess)) {
             if (guess.matches(".*\\d.*")) {
                 return false;
             } else {
@@ -126,4 +140,21 @@ public class Wordle {
         return guess.equals(answer);
     }
 
+    /**
+     * 
+     * @param filename Filepath to read.
+     * @return List of strings from file.
+     */
+    public static ArrayList<String> readFileAsListOfStrings(String filename) {
+        ArrayList<String> data = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                data.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
 }
